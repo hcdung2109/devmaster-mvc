@@ -1,13 +1,8 @@
 <?php
 include_once 'Model.php';
 
-Class User extends Model
+Class Article extends Model
 {
-    public $id;
-    public $name;
-    public $birthday;
-    public $address;
-
     // Dinh nghĩa hàm khởi tạo
     public function __construct()
     {

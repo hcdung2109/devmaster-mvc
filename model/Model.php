@@ -5,33 +5,89 @@ Class Model
     private $servername = "localhost";
     private $username = "root";
     private $password = "";
-    private $database = "quanlyvattu";
+    private $database = "webshop";
 
     private $conn = null; // connection to db
-    private $result = null;
+    private $result = null; // kêt quả
 
-    protected $table = null; // dung the hien table dag duoc goi toi
+    protected $table = null; // lưu tên bảng hiện tại
 
+    // Hàm khơi tạo - luôn được gọi khi lớp được khởi tạo
     public function __construct()
-    {
-        $this->connect(); // ket noi toi CSDL
+    { // Kết nối CSDL
+        $this->connect();
     }
 
     /**
-     * Open Connection to db
+     * ket noi toi CSDL
      * @return false|mysqli|null
      */
     public function connect()
     {
-        $this->conn = mysqli_connect($this->servername, $this->username, $this->password, $this->database);
-
+        $this->conn = mysqli_connect($this->servername,
+                                    $this->username,
+                                    $this->password,
+                                    $this->database);
         if (!$this->conn) {
             die('Ket noi that bai');
         } else {
+            // kết nối thành công
             $this->conn->set_charset("utf8");
+            //echo 'OK';
+        }
+        return $this->conn;
+    }
+
+    // lấy toàn dữ liệu của 1 bảng //$table = $this->table;
+    public function getAll($table , $condition = 1)
+    {
+        $sql = "SELECT * FROM $table WHERE $condition";
+        $result  = $this->conn->query($sql);
+
+        $data = [];
+        while ($row = mysqli_fetch_array($result,MYSQLI_ASSOC)) {
+            $data[] = $row;
         }
 
-        return $this->conn;
+        return $data;
+    }
+
+    public function insert($table, $data)
+    {
+        if (is_array($data) && $data) {
+            $columns = [];
+            $values = [];
+
+            foreach ($data as $key => $val) {
+                $columns[] = $key;
+                if (is_string($val)) {
+                    $values[] = "'$val'";
+                } else {
+                    $values[] = $val;
+                }
+
+            }
+
+            $strColumn = implode(',', $columns);
+            $strValues = implode(',', $values);
+
+            // $sql = 'INSERT INTO '.$table.' (name) VALUES ("'.$data.'")';
+            $sql = "INSERT INTO $table ($strColumn) VALUES ($strValues)";
+
+            $result = $this->conn->query($sql);
+
+            if (!$result) { // kiêm tra nếu thực hiện nếu thất bại
+                print_r("Lỗi : " .$this->conn->error);
+                exit();
+            }
+        }
+    }
+
+    public function delete($table, $id)
+    {
+        $sql = "DELETE FROM $table WHERE id = $id";
+
+        $this->conn->query($sql);
     }
 
     /**
@@ -46,7 +102,10 @@ Class Model
         return $this->result;
     }
 
-    public function insert($params)
+
+
+
+    public function add($params)
     {
         $table = $this->table;
         $fields = []; // chua toan bo thuộc field trong CSDL
@@ -96,23 +155,6 @@ Class Model
         return $this->execute($sql);
     }
 
-    // lay toan bo danh sach cua một bảng
-    public function all()
-    {
-        // goi toi ten table
-        $table = $this->table;
-
-        $sql = "SELECT * FROM $table";
-        $query = $this->execute($sql); // run query
-
-        $data = [];
-        while ($row = mysqli_fetch_array($query,MYSQLI_ASSOC)) {
-            $data[] = $row;
-        }
-
-        return $data;
-    }
-
     // Tìm kiếm trong CSDL
     public function find($conditions)
     {
@@ -137,13 +179,6 @@ Class Model
     public function insertData($name , $birthday, $address)
     {
         $sql = "INSERT INTO users(name, birthday, address) VALUES ('$name', '$birthday', '$address')";
-
-        return $this->execute($sql);
-    }
-
-    public function delete($user_id)
-    {
-        $sql = "DELETE FROM users WHERE id = $user_id";
 
         return $this->execute($sql);
     }
