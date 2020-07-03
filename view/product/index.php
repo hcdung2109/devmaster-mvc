@@ -26,7 +26,7 @@
                         <td><?= $val['id']; ?> </td>
                         <td><?= $val['name']; ?></td>
                         <td>
-                            <button data-id="<?= $val['id']; ?>" class="btn btn-primary btnUpdate">Sửa</button>
+                            <button class="btn btn-primary btnUpdate">Sửa</button>
                             <button data-id="<?= $val['id']; ?>" class="btn btn-danger btnDelete">Xóa</button>
                         </td>
                     </tr>
@@ -40,19 +40,34 @@
 <script type="text/javascript">
     $(document).ready(function() {
         $('.btnDelete').click(function () {
-            var id_product = $(this).attr('data-id');
+            var is_confirm = confirm('Bạn có chắc chắn muốn xóa ?');
 
-            // Tạo ra 1 request ngầm
-            $.ajax({
-                method: "GET",
-                url: "http://mvc.local:8888/index.php?controller=product&action=delete",
-                data: {
-                    id: id_product
-                },
-                success: function (response) {
-                    console.log(response);
-                }
-            });
+            if (is_confirm === true) {
+                var id_product = $(this).attr('data-id');
+                var me =  this;
+                // Tạo ra 1 request ngầm
+                $.ajax({
+                    method: "POST",
+                    url: "http://mvc.local:8888/index.php?controller=product&action=delete",
+                    data: {
+                        id: id_product
+                    },
+                    dataType : 'json' , // định dạnh kiểu dữ liệu trả về
+                    success: function (data) {
+                        // kết quả trả về + dữ liệu khi send request thành công
+                        var objData = data;
+                        // console.log(objData.status);
+                        if (objData.status != undefined && objData.status == 1) {
+                            // xóa thành công
+                            // cách 1 reload page
+                            // location.reload();
+                            // cách 2 remove DOM html
+                            $(me).closest('tr').remove();
+                        }
+
+                    }
+                });
+            }
         });
     });
 </script>

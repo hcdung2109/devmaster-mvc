@@ -56,11 +56,17 @@ class ProductController
 
     public function delete()
     {
-        $id = $_GET['id'];
+        $id = $_POST['id'];
 
         $modelProduct = new Product();
         $modelProduct->delete($this->table, $id); // gọi tới hàm xóa
 
+        $data = [
+            'status' => 1, // success
+            'message' => 'Xóa thành công'
+        ];
+
+        echo json_encode($data);
     }
 }
 
